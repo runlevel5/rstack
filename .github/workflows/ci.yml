@@ -49,20 +49,7 @@ jobs:
           - 1.2.1
           - 1.4.0
           - 1.6.2
-        exclude:
-          # libunwind has a bug where access_reg() dereferences cursor->uc without
-          # checking validity. When DWARF unwinding encounters DWARF_LOC_TYPE_REG
-          # locations, it calls access_reg() which computes an offset into the
-          # invalid/NULL uc pointer, causing SIGSEGV.
-          # See: https://github.com/libunwind/libunwind/issues/938
-          - target: x86_64
-            version: 1.4.0
-          - target: i686
-            version: 1.2.1
-          - target: i686
-            version: 1.4.0
-          - target: i686
-            version: 1.6.2
+
     name: libunwind ${{ matrix.target }} ${{ matrix.version }}
     runs-on: ubuntu-latest
     env:
@@ -102,7 +89,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/libunwind
-          key: libunwind-${{ matrix.version }}-${{ matrix.target }}-v9-debug
+          key: libunwind-${{ matrix.version }}-${{ matrix.target }}-v10-patched
       - name: Build libunwind
         if: ${{ !steps.libunwind-cache.outputs.cache-hit }}
         run: |
@@ -129,6 +116,11 @@ jobs:
 
           curl -L https://download-mirror.savannah.nongnu.org/releases/libunwind/libunwind-${{ matrix.version }}.tar.gz | tar -C /tmp -xzf -
           cd /tmp/libunwind-${{ matrix.version }}
+
+          # Apply downstream patch to fix SIGSEGV in access_reg() due to NULL ucontext
+          # See: https://github.com/libunwind/libunwind/issues/938
+          patch -p1 < $GITHUB_WORKSPACE/.github/patches/libunwind-${{ matrix.version }}-null-uc-check.patch || true
+
           eval ./configure --enable-debug --disable-static --host ${{ matrix.target }}-linux-gnu --target ${{ matrix.target }}-linux-gnu --prefix=$HOME/libunwind $args
           # Only build src directory to avoid test build failures with old libunwind versions
           make -C src -j$(nproc)
