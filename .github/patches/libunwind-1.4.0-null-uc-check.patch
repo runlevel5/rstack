@@ -1,33 +1,27 @@
 --- a/src/x86/Ginit.c
 +++ b/src/x86/Ginit.c
-@@ -133,6 +133,17 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
+@@ -133,6 +133,14 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
    unw_word_t *addr;
    ucontext_t *uc = ((struct cursor *)arg)->uc;
  
 +  if (!uc)
 +    {
-+      /* When uc is NULL (e.g., during DWARF-based unwinding after the first
-+         frame), we cannot read from the ucontext. Instead, delegate to
-+         tdep_access_reg which reads from the cursor's saved register state.
-+         This handles the case where dwarf_get() encounters a DWARF_LOC_TYPE_REG
-+         location and calls back into access_reg.
++      /* uc is NULL during DWARF-based unwinding with DWARF_LOC_TYPE_REG.
++         Return an error since we can't access registers without a ucontext.
 +         See: https://github.com/libunwind/libunwind/issues/938 */
-+      return tdep_access_reg ((struct cursor *)arg, reg, val, write);
++      return -UNW_EBADREG;
 +    }
 +
    if (unw_is_fpreg (reg))
      goto badreg;
  
-@@ -159,6 +170,14 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
+@@ -159,6 +167,11 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
    ucontext_t *uc = ((struct cursor *)arg)->uc;
    unw_fpreg_t *addr;
  
 +  if (!uc)
 +    {
-+      /* When uc is NULL, delegate to tdep_access_fpreg which handles
-+         reading from the cursor's saved register state.
-+         See: https://github.com/libunwind/libunwind/issues/938 */
-+      return tdep_access_fpreg ((struct cursor *)arg, reg, val, write);
++      return -UNW_EBADREG;
 +    }
 +
    if (!unw_is_fpreg (reg))
@@ -35,34 +29,28 @@
  
 --- a/src/x86_64/Ginit.c
 +++ b/src/x86_64/Ginit.c
-@@ -286,6 +286,17 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
+@@ -286,6 +286,14 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
    unw_word_t *addr;
    ucontext_t *uc = ((struct cursor *)arg)->uc;
  
 +  if (!uc)
 +    {
-+      /* When uc is NULL (e.g., during DWARF-based unwinding after the first
-+         frame), we cannot read from the ucontext. Instead, delegate to
-+         tdep_access_reg which reads from the cursor's saved register state.
-+         This handles the case where dwarf_get() encounters a DWARF_LOC_TYPE_REG
-+         location and calls back into access_reg.
++      /* uc is NULL during DWARF-based unwinding with DWARF_LOC_TYPE_REG.
++         Return an error since we can't access registers without a ucontext.
 +         See: https://github.com/libunwind/libunwind/issues/938 */
-+      return tdep_access_reg ((struct cursor *)arg, reg, val, write);
++      return -UNW_EBADREG;
 +    }
 +
    if (unw_is_fpreg (reg))
      goto badreg;
  
-@@ -312,6 +323,14 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
+@@ -312,6 +320,11 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
    ucontext_t *uc = ((struct cursor *)arg)->uc;
    unw_fpreg_t *addr;
  
 +  if (!uc)
 +    {
-+      /* When uc is NULL, delegate to tdep_access_fpreg which handles
-+         reading from the cursor's saved register state.
-+         See: https://github.com/libunwind/libunwind/issues/938 */
-+      return tdep_access_fpreg ((struct cursor *)arg, reg, val, write);
++      return -UNW_EBADREG;
 +    }
 +
    if (!unw_is_fpreg (reg))
