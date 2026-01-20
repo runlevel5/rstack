@@ -18,8 +18,8 @@ pub type unw_sword_t = i64;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct unw_tdep_proc_info_t {
-    // UNW_EMPTY_STRUCT was added in libunwind 1.6.0 for aarch64
-    #[cfg(not(pre16))]
+    // UNW_EMPTY_STRUCT was added in libunwind 1.7.0 for aarch64
+    #[cfg(not(pre17))]
     pub unused: u8,
 }
 
@@ -102,8 +102,8 @@ pub const UNW_TDEP_NUM_EH_REGS: c_int = 4;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct unw_tdep_save_loc_t {
-    // UNW_EMPTY_STRUCT was added in libunwind 1.6.0 for aarch64
-    #[cfg(not(pre16))]
+    // UNW_EMPTY_STRUCT was added in libunwind 1.7.0 for aarch64
+    #[cfg(not(pre17))]
     pub unused: u8,
 }
 

@@ -75,14 +75,14 @@ fn main() {
             // UNW_EMPTY_STRUCT (uint8_t unused) was added at different versions per arch:
             // - x86_64: always had `char unused`, changed to uint8_t in 1.8
             // - x86: added in 1.7
-            // - aarch64: added in 1.6
+            // - aarch64: added in 1.7
             // - ppc64: added in 1.8
             ("unw_tdep_save_loc_t", "unused") | ("unw_tdep_proc_info_t", "unused") => {
                 let target = env::var("TARGET").unwrap();
                 if target.contains("x86_64") {
                     false // x86_64 always has this field
                 } else if target.contains("aarch64") {
-                    pre16 // aarch64 got it in 1.6
+                    pre17 // aarch64 got it in 1.7
                 } else if target.contains("i686") || target.contains("x86") {
                     pre17 // x86 got it in 1.7
                 } else {
