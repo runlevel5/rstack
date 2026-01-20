@@ -38,6 +38,7 @@ jobs:
         run: cargo run --manifest-path dw-systest/Cargo.toml
   libunwind:
     strategy:
+      fail-fast: false
       matrix:
         target:
           - x86_64
