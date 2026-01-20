@@ -147,6 +147,7 @@ pub const UNW_TDEP_NUM_EH_REGS: c_int = 4;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct unw_tdep_save_loc_t {
+    #[cfg(not(pre12))]
     pub unused: c_char,
 }
 
@@ -156,6 +157,7 @@ pub type unw_tdep_context_t = ucontext_t;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct unw_tdep_proc_info_t {
+    #[cfg(not(pre12))]
     pub unused: c_char,
 }
 
