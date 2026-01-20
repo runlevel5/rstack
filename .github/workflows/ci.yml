@@ -10,7 +10,7 @@ on:
 
 env:
   RUSTFLAGS: -D warnings
-  RUST_BACKTRACE: 1
+  RUST_BACKTRACE: full
   STABLE_VERSION: 1.82.0
 
 jobs:
