@@ -124,6 +124,7 @@ cfg_if! {
 
         #[derive(Copy, Clone)]
         #[repr(align(16))]
+        #[allow(dead_code)]
         struct unw_sigcontext_padding([u8; PADDING_BYTES * 8]);
 
         #[repr(C)]
