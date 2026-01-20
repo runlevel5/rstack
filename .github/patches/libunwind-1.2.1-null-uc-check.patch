@@ -88,7 +88,7 @@
      {
 --- a/src/x86_64/init.h
 +++ b/src/x86_64/init.h
-@@ -27,12 +27,14 @@
+@@ -27,16 +27,18 @@
  
  #include "unwind_i.h"
  
