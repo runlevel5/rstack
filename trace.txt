@@ -1,0 +1,76 @@
+running 1 test
+ >_Ux86_64_init_mem_validate: using mincore to validate memory
+ >unw_init_local_common: (cursor=0x7f07813fbeb0)
+            >access_reg: RIP -> 0x0000555f4a0bdace
+            >access_reg: RSP -> 0x00007f07813fd2b0
+              >_Ux86_64_dwarf_find_proc_info: looking for IP=0x555f4a0bdacd
+               >_Ux86_64_dwarf_callback: checking , base=0x555f4a0a9000)
+                >access_mem: mem[0000555f4a168a18] -> 25ac3b031b01
+                >access_mem: mem[0000555f4a168a18] -> 25ac3b031b01
+                >access_mem: mem[0000555f4a168a18] -> 25ac3b031b01
+                >access_mem: mem[0000555f4a168a18] -> 25ac3b031b01
+                >access_mem: mem[0000555f4a168a20] -> fff51608000004b4
+                >access_mem: mem[0000555f4a168a20] -> fff51608000004b4
+                >access_mem: mem[0000555f4a168a20] -> fff51608000004b4
+                >access_mem: mem[0000555f4a168a20] -> fff51608000004b4
+               >_Ux86_64_dwarf_callback: found table `': segbase=0x555f4a168a18, len=1204, gp=0x555f4a186288, table_data=0x555f4a168a24
+               >_Ux86_64_dwarf_find_debug_frame: Trying to find .debug_frame for 
+                >_Uelf64_string_table: strtab=0x614656
+                >_Uelf64_string_table: strtab=0x614656
+               >_Ux86_64_dwarf_find_debug_frame: couldn't load .debug_frame
+               >lookup: e->start_ip_offset = fffffffffff9c878
+               >lookup: e->start_ip_offset = fffffffffff66898
+               >lookup: e->start_ip_offset = fffffffffff5a898
+               >lookup: e->start_ip_offset = fffffffffff548e8
+               >lookup: e->start_ip_offset = fffffffffff566e8
+               >lookup: e->start_ip_offset = fffffffffff54f98
+               >lookup: e->start_ip_offset = fffffffffff55e38
+               >lookup: e->start_ip_offset = fffffffffff55088
+               >lookup: e->start_ip_offset = fffffffffff55e08
+               >lookup: e->start_ip_offset = fffffffffff55de8
+               >lookup: e->start_ip_offset = fffffffffff55dd8
+               >_Ux86_64_dwarf_search_unwind_table: ip=0x555f4a0bdacd, start_ip=0xfffffffffff55088
+ >_Ux86_64_dwarf_search_unwind_table: e->fde_offset = 28bc, segbase = 555f4a168a18, debug_frame_base = 0, fde_addr = 555f4a16b2d4
+            >_Ux86_64_dwarf_extract_proc_info_from_fde: FDE @ 0x555f4a16b2d4
+                >access_mem: mem[0000555f4a16b2d0] -> 2800700e41
+                >access_mem: mem[0000555f4a16b2d0] -> 2800700e41
+                >access_mem: mem[0000555f4a16b2d0] -> 2800700e41
+                >access_mem: mem[0000555f4a16b2d0] -> 2800700e41
+                >access_mem: mem[0000555f4a16b2d8] -> fff527c40000007c
+                >access_mem: mem[0000555f4a16b2d8] -> fff527c40000007c
+                >access_mem: mem[0000555f4a16b2d8] -> fff527c40000007c
+                >access_mem: mem[0000555f4a16b1e8] -> fff5287400000220
+                >access_mem: mem[0000555f4a16b1f0] -> 200e44000000002a
+                >access_mem: mem[0000555f4a16b1f0] -> 200e44000000002a
+                >access_mem: mem[0000555f4a16b1f0] -> 200e44000000002a
+                >access_mem: mem[0000555f4a16b1f0] -> 200e44000000002a
+                >access_mem: mem[0000555f4a16b1f0] -> 200e44000000002a
+               >_Ux86_64_dwarf_extract_proc_info_from_fde: FDE covers IP 0x555f4a0bda60-0x555f4a0bda8a, LSDA=0x0
+     >_Ux86_64_fetch_frame: fetch frame ip=0x555f4a0bda77 cfa=0x7f07813fe630 format=0
+                >access_mem: mem[0000555f4a16afd8] -> 19008070c1b
+                >access_mem: mem[0000555f4a16afd8] -> 19008070c1b
+                >access_mem: mem[0000555f4a16afd8] -> 19008070c1b
+               >run_cfi_program: CFA_def_cfa r7+0x8
+                >access_mem: mem[0000555f4a16afd8] -> 19008070c1b
+                >access_mem: mem[0000555f4a16afd8] -> 19008070c1b
+               >run_cfi_program: CFA_offset r16 at cfa+0xfffffffffffffff8
+                >access_mem: mem[0000555f4a16afd8] -> 19008070c1b
+                >access_mem: mem[0000555f4a16afd8] -> 19008070c1b
+                >access_mem: mem[0000555f4a16b1f0] -> 200e44000000002a
+               >run_cfi_program: CFA_advance_loc to 0x555f4a0bda64
+                >access_mem: mem[0000555f4a16b1f0] -> 200e44000000002a
+                >access_mem: mem[0000555f4a16b1f0] -> 200e44000000002a
+               >run_cfi_program: CFA_def_cfa_offset 0x20
+                >access_mem: mem[0000555f4a16b1f8] -> 1400080e65
+               >run_cfi_program: CFA_advance_loc to 0x555f4a0bda89
+     >_Ux86_64_cache_frame: cache frame ip=0x555f4a0bda77 cfa=0x7f07813fe630 format=0
+warning: Missing auto-load script at offset 0 in section .debug_gdb_scripts
+of file /home/runner/work/rstack/rstack/target/x86_64-unknown-linux-gnu/debug/deps/unwind-e485120a87f52ddc.
+Use `info auto-load python-scripts [REGEXP]' to list them.
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+running 0 tests
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+[Inferior 1 (process 11470) exited normally]
+No stack.
+The program has no registers now.
