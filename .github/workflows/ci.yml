@@ -102,7 +102,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/libunwind
-          key: libunwind-${{ matrix.version }}-${{ matrix.target }}-v6
+          key: libunwind-${{ matrix.version }}-${{ matrix.target }}-v7-debug
       - name: Build libunwind
         if: ${{ !steps.libunwind-cache.outputs.cache-hit }}
         run: |
@@ -114,22 +114,22 @@ jobs:
 
           case ${{ matrix.target }} in
             x86_64)
-              args="CFLAGS=$fcommon_flag"
+              args="CFLAGS=\"-g -O0 $fcommon_flag\""
               ;;
             i686)
-              args="CFLAGS=\"-m32 $fcommon_flag\""
+              args="CFLAGS=\"-g -O0 -m32 $fcommon_flag\""
               ;;
             aarch64)
-              args="CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ CFLAGS=$fcommon_flag"
+              args="CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ CFLAGS=\"-g -O0 $fcommon_flag\""
               ;;
             powerpc64)
-              args="CC=powerpc64-linux-gnu-gcc CXX=powerpc64-linux-gnu-g++ CFLAGS=$fcommon_flag"
+              args="CC=powerpc64-linux-gnu-gcc CXX=powerpc64-linux-gnu-g++ CFLAGS=\"-g -O0 $fcommon_flag\""
               ;;
           esac
 
           curl -L https://download-mirror.savannah.nongnu.org/releases/libunwind/libunwind-${{ matrix.version }}.tar.gz | tar -C /tmp -xzf -
           cd /tmp/libunwind-${{ matrix.version }}
-          eval ./configure --disable-static --host ${{ matrix.target }}-linux-gnu --target ${{ matrix.target }}-linux-gnu --prefix=$HOME/libunwind $args
+          eval ./configure --enable-debug --disable-static --host ${{ matrix.target }}-linux-gnu --target ${{ matrix.target }}-linux-gnu --prefix=$HOME/libunwind $args
           # Only build src directory to avoid test build failures with old libunwind versions
           make -C src -j$(nproc)
           make -C src install
