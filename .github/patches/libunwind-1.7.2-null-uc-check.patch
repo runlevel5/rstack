@@ -1,0 +1,88 @@
+--- a/src/x86/Ginit.c
++++ b/src/x86/Ginit.c
+@@ -149,6 +149,14 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
+   unw_word_t *addr;
+   ucontext_t *uc = ((struct cursor *)arg)->uc;
+ 
++  if (!uc)
++    {
++      /* uc is NULL during DWARF-based unwinding with DWARF_LOC_TYPE_REG.
++         Return an error since we can't access registers without a ucontext.
++         See: https://github.com/libunwind/libunwind/issues/938 */
++      return -UNW_EBADREG;
++    }
++
+   if (unw_is_fpreg (reg))
+     goto badreg;
+ 
+@@ -179,6 +187,11 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
+   ucontext_t *uc = ((struct cursor *)arg)->uc;
+   unw_fpreg_t *addr;
+ 
++  if (!uc)
++    {
++      return -UNW_EBADREG;
++    }
++
+   if (!unw_is_fpreg (reg))
+     goto badreg;
+ 
+--- a/src/x86/Gos-linux.c
++++ b/src/x86/Gos-linux.c
+@@ -254,6 +254,12 @@ x86_r_uc_addr (ucontext_t *uc, int reg)
+ {
+   void *addr;
+ 
++  /* uc can be NULL during DWARF-based unwinding when a register is saved
++     in another register (DWARF_WHERE_REG). Return NULL to signal error.
++     See: https://github.com/libunwind/libunwind/issues/938 */
++  if (!uc)
++    return NULL;
++
+   switch (reg)
+     {
+     case UNW_X86_GS:  addr = &uc->uc_mcontext.gregs[REG_GS]; break;
+--- a/src/x86_64/Ginit.c
++++ b/src/x86_64/Ginit.c
+@@ -331,6 +331,14 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
+   unw_word_t *addr;
+   ucontext_t *uc = AS_ARG_GET_UC_PTR(arg);
+ 
++  if (!uc)
++    {
++      /* uc is NULL during DWARF-based unwinding with DWARF_LOC_TYPE_REG.
++         Return an error since we can't access registers without a ucontext.
++         See: https://github.com/libunwind/libunwind/issues/938 */
++      return -UNW_EBADREG;
++    }
++
+   if (unw_is_fpreg (reg))
+     goto badreg;
+ 
+@@ -361,6 +369,11 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
+   ucontext_t *uc = AS_ARG_GET_UC_PTR(arg);
+   unw_fpreg_t *addr;
+ 
++  if (!uc)
++    {
++      return -UNW_EBADREG;
++    }
++
+   if (!unw_is_fpreg (reg))
+     goto badreg;
+ 
+--- a/src/x86_64/Gos-linux.c
++++ b/src/x86_64/Gos-linux.c
+@@ -105,6 +105,12 @@ x86_64_r_uc_addr (ucontext_t *uc, int reg)
+ {
+   /* NOTE: common_init() in init.h inlines these for fast path access. */
+   void *addr;
++
++  /* uc can be NULL during DWARF-based unwinding when a register is saved
++     in another register (DWARF_WHERE_REG). Return NULL to signal error.
++     See: https://github.com/libunwind/libunwind/issues/938 */
++  if (!uc)
++    return NULL;
+ 
+   switch (reg)
+     {

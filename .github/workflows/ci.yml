@@ -49,6 +49,8 @@ jobs:
           - 1.2.1
           - 1.4.0
           - 1.6.2
+          - 1.7.2
+          - 1.8.3
 
     name: libunwind ${{ matrix.target }} ${{ matrix.version }}
     runs-on: ubuntu-latest
