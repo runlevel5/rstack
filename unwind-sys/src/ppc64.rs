@@ -147,7 +147,8 @@ pub const UNW_TDEP_NUM_EH_REGS: c_int = 4;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct unw_tdep_save_loc_t {
-    // ppc64 has an empty struct - no unused field unlike x86_64
+    #[cfg(not(pre18))]
+    pub unused: u8,
 }
 
 // On ppc64, we can directly use ucontext_t as the unwind context
@@ -156,7 +157,8 @@ pub type unw_tdep_context_t = ucontext_t;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct unw_tdep_proc_info_t {
-    // ppc64 has an empty struct - no unused field unlike x86_64
+    #[cfg(not(pre18))]
+    pub unused: u8,
 }
 
 // On ppc64, libunwind uses getcontext() from libc
