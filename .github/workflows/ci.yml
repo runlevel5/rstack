@@ -53,7 +53,7 @@ jobs:
           # checking validity. When DWARF unwinding encounters DWARF_LOC_TYPE_REG
           # locations, it calls access_reg() which computes an offset into the
           # invalid/NULL uc pointer, causing SIGSEGV.
-          # See: https://github.com/libunwind/libunwind/issues/XXX
+          # See: https://github.com/libunwind/libunwind/issues/938
           - target: x86_64
             version: 1.4.0
           - target: i686
