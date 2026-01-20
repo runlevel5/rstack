@@ -1,0 +1,45 @@
+--- a/src/x86_64/Ginit.c
++++ b/src/x86_64/Ginit.c
+@@ -283,8 +283,21 @@ static int
+ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
+             void *arg)
+ {
+-  unw_word_t *addr;
+-  ucontext_t *uc = ((struct cursor *)arg)->uc;
++  unw_word_t *addr = NULL;
++  ucontext_t *uc = NULL;
++
++  /* During DWARF-based remote unwinding, arg may point to a cursor without
++     a valid ucontext. Check before dereferencing.
++     See: https://github.com/libunwind/libunwind/issues/938 */
++  if (arg)
++    uc = ((struct cursor *)arg)->uc;
++
++  if (!uc)
++    {
++      Debug (1, "access_reg: uc is NULL for reg %d, returning -UNW_EBADREG\n", reg);
++      return -UNW_EBADREG;
++    }
+ 
+   if (unw_is_fpreg (reg))
+     goto badreg;
+@@ -309,8 +322,18 @@ static int
+ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
+              int write, void *arg)
+ {
+-  ucontext_t *uc = ((struct cursor *)arg)->uc;
+   unw_fpreg_t *addr;
++  ucontext_t *uc = NULL;
++
++  /* Check arg before dereferencing */
++  if (arg)
++    uc = ((struct cursor *)arg)->uc;
++
++  if (!uc)
++    {
++      Debug (1, "access_fpreg: uc is NULL for reg %d, returning -UNW_EBADREG\n", reg);
++      return -UNW_EBADREG;
++    }
+ 
+   if (!unw_is_fpreg (reg))
+     goto badreg;

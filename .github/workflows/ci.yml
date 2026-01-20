@@ -95,7 +95,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/libunwind
-          key: libunwind-${{ matrix.version }}-${{ matrix.target }}-v14-patched-debug
+          key: libunwind-${{ matrix.version }}-${{ matrix.target }}-v15-patched-debug
       - name: Build libunwind
         if: ${{ !steps.libunwind-cache.outputs.cache-hit }}
         run: |
@@ -127,8 +127,22 @@ jobs:
 
           # Apply downstream patch to fix SIGSEGV in access_reg() due to NULL ucontext
           # See: https://github.com/libunwind/libunwind/issues/938
-          echo "=== Applying patch ==="
-          patch -p1 --verbose < $GITHUB_WORKSPACE/.github/patches/libunwind-${{ matrix.version }}-null-uc-check.patch || true
+          echo "=== Applying patches ==="
+          PATCH_DIR="$GITHUB_WORKSPACE/.github/patches/${{ matrix.version }}"
+          PATCH_FILE="$GITHUB_WORKSPACE/.github/patches/libunwind-${{ matrix.version }}-null-uc-check.patch"
+          if [ -d "$PATCH_DIR" ]; then
+            # Apply individual patches from version directory (for 1.4.0, 1.7.2)
+            for p in "$PATCH_DIR"/*.patch; do
+              echo "Applying: $p"
+              patch -p1 --verbose < "$p"
+            done
+          elif [ -f "$PATCH_FILE" ]; then
+            # Apply combined patch file (for 1.2.1, 1.6.2, 1.8.3)
+            echo "Applying: $PATCH_FILE"
+            patch -p1 --verbose < "$PATCH_FILE"
+          else
+            echo "No patch found for version ${{ matrix.version }}"
+          fi
           
           # Show the patched files to verify
           echo "=== Patched access_reg in x86/Ginit.c ==="
