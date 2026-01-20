@@ -1,0 +1,15 @@
+--- a/src/x86/Gos-linux.c
++++ b/src/x86/Gos-linux.c
+@@ -254,6 +254,12 @@
+ x86_r_uc_addr (ucontext_t *uc, int reg)
+ {
+   void *addr;
++
++  /* uc can be NULL during DWARF-based unwinding when a register is saved
++     in another register (DWARF_WHERE_REG). Return NULL to signal error.
++     See: https://github.com/libunwind/libunwind/issues/938 */
++  if (!uc)
++    return NULL;
+ 
+   switch (reg)
+     {

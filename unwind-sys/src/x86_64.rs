@@ -35,8 +35,10 @@ pub const UNW_TDEP_EH: c_int = UNW_X86_64_RAX;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct unw_tdep_save_loc_t {
-    #[cfg(not(pre12))]
+    #[cfg(all(not(pre12), pre18))]
     pub unused: c_char,
+    #[cfg(not(pre18))]
+    pub unused: u8,
 }
 
 pub type unw_tdep_context_t = ucontext_t;
@@ -44,8 +46,10 @@ pub type unw_tdep_context_t = ucontext_t;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct unw_tdep_proc_info_t {
-    #[cfg(not(pre12))]
+    #[cfg(all(not(pre12), pre18))]
     pub unused: c_char,
+    #[cfg(not(pre18))]
+    pub unused: u8,
 }
 
 #[macro_export]

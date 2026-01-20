@@ -28,6 +28,18 @@ fn main() {
     if major < 1 || (major == 1 && minor < 4) {
         cfg.cfg("pre14", None);
     }
+    let pre16 = major < 1 || (major == 1 && minor < 6);
+    if pre16 {
+        cfg.cfg("pre16", None);
+    }
+    let pre17 = major < 1 || (major == 1 && minor < 7);
+    if pre17 {
+        cfg.cfg("pre17", None);
+    }
+    let pre18 = major < 1 || (major == 1 && minor < 8);
+    if pre18 {
+        cfg.cfg("pre18", None);
+    }
 
     cfg.header("libunwind.h")
         .type_name(|t, _, _| match t {
@@ -53,13 +65,40 @@ fn main() {
             "unw_save_loc_t_u" => true,
             _ => false,
         })
+        .skip_field(move |s, f| match (s, f) {
+            // ptrauth_insn_mask was added in libunwind 1.7.0
+            ("unw_accessors_t", "ptrauth_insn_mask") => pre17,
+            // get_elf_filename and get_proc_ip_range were added in libunwind 1.8.0
+            ("unw_accessors_t", "get_elf_filename") | ("unw_accessors_t", "get_proc_ip_range") => {
+                pre18
+            }
+            // UNW_EMPTY_STRUCT (uint8_t unused) was added at different versions per arch:
+            // - x86_64: always had `char unused`, changed to uint8_t in 1.8
+            // - x86: added in 1.7
+            // - aarch64: added in 1.7
+            // - ppc64: added in 1.8
+            ("unw_tdep_save_loc_t", "unused") | ("unw_tdep_proc_info_t", "unused") => {
+                let target = env::var("TARGET").unwrap();
+                if target.contains("x86_64") {
+                    false // x86_64 always has this field
+                } else if target.contains("aarch64") {
+                    pre17 // aarch64 got it in 1.7
+                } else if target.contains("i686") || target.contains("x86") {
+                    pre17 // x86 got it in 1.7
+                } else {
+                    pre18 // ppc64 got it in 1.8
+                }
+            }
+            _ => false,
+        })
         .skip_field_type(|s, f| match (s, f) {
             ("unw_save_loc_t", "u") => true,
             _ => false,
         })
-        // i686 ABI disagrees about how to handle ZST-by-value
+        // i686 and ppc64 ABI disagrees about how to handle ZST-by-value
         .skip_roundtrip(|t| {
-            env::var("TARGET").unwrap().contains("i686")
+            let target = env::var("TARGET").unwrap();
+            (target.contains("i686") || target.contains("powerpc64"))
                 && match t {
                     "unw_tdep_save_loc_t" | "unw_tdep_proc_info_t" => true,
                     _ => false,
