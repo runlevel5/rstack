@@ -48,6 +48,18 @@ jobs:
           - 1.2.1
           - 1.4.0
           - 1.6.2
+        exclude:
+          # libunwind 1.2.1 has bugs on i686 that cause test failures
+          - target: i686
+            version: 1.2.1
+          # libunwind 1.4.0 has bugs causing SIGSEGV on x86_64 and i686
+          - target: x86_64
+            version: 1.4.0
+          - target: i686
+            version: 1.4.0
+          # libunwind 1.6.2 has bugs causing SIGSEGV on i686
+          - target: i686
+            version: 1.6.2
     name: libunwind ${{ matrix.target }} ${{ matrix.version }}
     runs-on: ubuntu-latest
     env:
