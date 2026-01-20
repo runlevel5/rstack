@@ -134,6 +134,29 @@ pub struct unw_accessors_t {
             arg: *mut c_void,
         ) -> c_int,
     >,
+    // Added in libunwind 1.8.0
+    #[cfg(not(pre18))]
+    pub get_elf_filename: Option<
+        unsafe extern "C" fn(
+            asp: unw_addr_space_t,
+            addr: unw_word_t,
+            bufp: *mut c_char,
+            buf_len: size_t,
+            offp: *mut unw_word_t,
+            arg: *mut c_void,
+        ) -> c_int,
+    >,
+    // Added in libunwind 1.8.0
+    #[cfg(not(pre18))]
+    pub get_proc_ip_range: Option<
+        unsafe extern "C" fn(
+            asp: unw_addr_space_t,
+            ip: unw_word_t,
+            start_ip: *mut unw_word_t,
+            end_ip: *mut unw_word_t,
+            arg: *mut c_void,
+        ) -> c_int,
+    >,
     // Added in libunwind 1.7.0 for pointer authentication on arm64
     #[cfg(not(pre17))]
     pub ptrauth_insn_mask:

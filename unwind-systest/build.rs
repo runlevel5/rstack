@@ -67,6 +67,10 @@ fn main() {
         .skip_field(move |s, f| match (s, f) {
             // ptrauth_insn_mask was added in libunwind 1.7.0
             ("unw_accessors_t", "ptrauth_insn_mask") => pre17,
+            // get_elf_filename and get_proc_ip_range were added in libunwind 1.8.0
+            ("unw_accessors_t", "get_elf_filename") | ("unw_accessors_t", "get_proc_ip_range") => {
+                pre18
+            }
             // For non-x86_64 architectures, unused field was added in libunwind 1.8.0
             // x86_64 always had the unused field (as char, changed to uint8_t in 1.8)
             ("unw_tdep_save_loc_t", "unused") | ("unw_tdep_proc_info_t", "unused") => {
