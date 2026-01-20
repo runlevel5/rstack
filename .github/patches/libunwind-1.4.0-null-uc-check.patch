@@ -89,9 +89,9 @@
 --- a/src/x86_64/init.h
 +++ b/src/x86_64/init.h
 @@ -27,12 +27,14 @@
-
-#include "unwind_i.h"
-
+ 
+ #include "unwind_i.h"
+ 
 -/* Avoid a trip to x86_64_r_uc_addr() for purely local initialisation. */
 -#if defined UNW_LOCAL_ONLY && defined __linux
 -# define REG_INIT_LOC(c, rlc, ruc) \
@@ -105,11 +105,10 @@
 +   See: https://github.com/libunwind/libunwind/issues/938 */
 +#if defined UNW_LOCAL_ONLY && defined __FreeBSD__
 +/* FreeBSD still uses direct access - may need similar fix if crashes occur */
-# define REG_INIT_LOC(c, rlc, ruc) \
-    DWARF_LOC ((unw_word_t) &c->uc->uc_mcontext.mc_ ## rlc, 0)
-
-#else
-# define REG_INIT_LOC(c, rlc, ruc) \
-    DWARF_REG_LOC (&c->dwarf, UNW_X86_64_ ## ruc)
-#endif
-
+ # define REG_INIT_LOC(c, rlc, ruc) \
+     DWARF_LOC ((unw_word_t) &c->uc->uc_mcontext.mc_ ## rlc, 0)
+ 
+ #else
+ # define REG_INIT_LOC(c, rlc, ruc) \
+     DWARF_REG_LOC (&c->dwarf, UNW_X86_64_ ## ruc)
+ #endif
