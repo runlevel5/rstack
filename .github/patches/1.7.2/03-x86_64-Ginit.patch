@@ -1,6 +1,6 @@
 --- a/src/x86_64/Ginit.c
 +++ b/src/x86_64/Ginit.c
-@@ -329,8 +329,21 @@ static int
+@@ -329,8 +329,20 @@
  access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
              void *arg)
  {
@@ -23,14 +23,14 @@
  
    if (unw_is_fpreg (reg))
      goto badreg;
-@@ -359,8 +372,18 @@ static int
+@@ -359,9 +371,19 @@
  access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
-              int write, void *arg)
+               int write, void *arg)
  {
 -  ucontext_t *uc = AS_ARG_GET_UC_PTR(arg);
    unw_fpreg_t *addr;
 +  ucontext_t *uc = NULL;
-+
+ 
 +  /* Check arg before dereferencing */
 +  if (arg)
 +    uc = AS_ARG_GET_UC_PTR(arg);
@@ -40,6 +40,7 @@
 +      Debug (1, "access_fpreg: uc is NULL for reg %d, returning -UNW_EBADREG\n", reg);
 +      return -UNW_EBADREG;
 +    }
- 
++
    if (!unw_is_fpreg (reg))
      goto badreg;
+ 

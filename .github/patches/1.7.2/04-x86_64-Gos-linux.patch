@@ -1,15 +1,15 @@
 --- a/src/x86_64/Gos-linux.c
 +++ b/src/x86_64/Gos-linux.c
-@@ -105,6 +105,12 @@ x86_64_r_uc_addr (ucontext_t *uc, int reg)
- {
+@@ -107,6 +107,12 @@
    /* NOTE: common_init() in init.h inlines these for fast path access. */
    void *addr;
-+
+ 
 +  /* uc can be NULL during DWARF-based unwinding when a register is saved
 +     in another register (DWARF_WHERE_REG). Return NULL to signal error.
 +     See: https://github.com/libunwind/libunwind/issues/938 */
 +  if (!uc)
 +    return NULL;
- 
++
    switch (reg)
-   {
+     {
+     case UNW_X86_64_R8: addr = &uc->uc_mcontext.gregs[REG_R8]; break;
