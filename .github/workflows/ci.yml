@@ -131,7 +131,24 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.target }}-${{ matrix.version }}
+      - name: Install debugging tools
+        run: |
+          sudo apt-get install -y gdb libc6-dbg
+          # Install 32-bit debug libs for i686
+          if [ "${{ matrix.target }}" = "i686" ]; then
+            sudo apt-get install -y libc6-dbg:i386 || true
+          fi
       - name: Systest
         run: cargo run --manifest-path unwind-systest/Cargo.toml --target ${{ matrix.target }}-unknown-linux-gnu
       - name: Unwind test
-        run: cargo test --manifest-path unwind/Cargo.toml --target ${{ matrix.target }}-unknown-linux-gnu
+        run: |
+          # Build the test binary first
+          cargo test --manifest-path unwind/Cargo.toml --target ${{ matrix.target }}-unknown-linux-gnu --no-run 2>&1 | tee build.log
+          # Find the test binary
+          TEST_BIN=$(grep -oP 'target/\S+/deps/test-[a-f0-9]+' build.log | head -1)
+          if [ -n "$TEST_BIN" ] && [ -f "$TEST_BIN" ]; then
+            echo "Running test binary under gdb: $TEST_BIN"
+            gdb -batch -ex "set confirm off" -ex "run" -ex "bt full" -ex "info registers" -ex "quit" ./$TEST_BIN || true
+          fi
+          # Also run normally to get the standard output
+          cargo test --manifest-path unwind/Cargo.toml --target ${{ matrix.target }}-unknown-linux-gnu || true
