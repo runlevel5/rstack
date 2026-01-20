@@ -28,7 +28,8 @@ fn main() {
     if major < 1 || (major == 1 && minor < 4) {
         cfg.cfg("pre14", None);
     }
-    if major < 1 || (major == 1 && minor < 6) {
+    let pre16 = major < 1 || (major == 1 && minor < 6);
+    if pre16 {
         cfg.cfg("pre16", None);
     }
     let pre17 = major < 1 || (major == 1 && minor < 7);
@@ -74,14 +75,14 @@ fn main() {
             // UNW_EMPTY_STRUCT (uint8_t unused) was added at different versions per arch:
             // - x86_64: always had `char unused`, changed to uint8_t in 1.8
             // - x86: added in 1.7
-            // - aarch64: has had it since at least 1.6.2 (always present)
+            // - aarch64: added in 1.6
             // - ppc64: added in 1.8
             ("unw_tdep_save_loc_t", "unused") | ("unw_tdep_proc_info_t", "unused") => {
                 let target = env::var("TARGET").unwrap();
                 if target.contains("x86_64") {
                     false // x86_64 always has this field
                 } else if target.contains("aarch64") {
-                    false // aarch64 always has this field
+                    pre16 // aarch64 got it in 1.6
                 } else if target.contains("i686") || target.contains("x86") {
                     pre17 // x86 got it in 1.7
                 } else {
