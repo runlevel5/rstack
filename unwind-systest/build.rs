@@ -28,6 +28,17 @@ fn main() {
     if major < 1 || (major == 1 && minor < 4) {
         cfg.cfg("pre14", None);
     }
+    if major < 1 || (major == 1 && minor < 6) {
+        cfg.cfg("pre16", None);
+    }
+    let pre17 = major < 1 || (major == 1 && minor < 7);
+    if pre17 {
+        cfg.cfg("pre17", None);
+    }
+    let pre18 = major < 1 || (major == 1 && minor < 8);
+    if pre18 {
+        cfg.cfg("pre18", None);
+    }
 
     cfg.header("libunwind.h")
         .type_name(|t, _, _| match t {
@@ -51,6 +62,21 @@ fn main() {
         })
         .skip_struct(|s| match s {
             "unw_save_loc_t_u" => true,
+            _ => false,
+        })
+        .skip_field(move |s, f| match (s, f) {
+            // ptrauth_insn_mask was added in libunwind 1.7.0
+            ("unw_accessors_t", "ptrauth_insn_mask") => pre17,
+            // For non-x86_64 architectures, unused field was added in libunwind 1.8.0
+            // x86_64 always had the unused field (as char, changed to uint8_t in 1.8)
+            ("unw_tdep_save_loc_t", "unused") | ("unw_tdep_proc_info_t", "unused") => {
+                let target = env::var("TARGET").unwrap();
+                if target.contains("x86_64") {
+                    false // x86_64 always has this field
+                } else {
+                    pre18 // other archs only have it in 1.8+
+                }
+            }
             _ => false,
         })
         .skip_field_type(|s, f| match (s, f) {
