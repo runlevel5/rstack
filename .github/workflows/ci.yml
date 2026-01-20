@@ -136,6 +136,14 @@ jobs:
           # Install headers manually (make -C include install doesn't work standalone)
           mkdir -p $HOME/libunwind/include
           cp include/*.h $HOME/libunwind/include/
+      - name: Debug - List installed libunwind files
+        run: |
+          echo "=== Installed files in ~/libunwind ==="
+          find ~/libunwind -type f | head -50
+          echo "=== pkg-config directory ==="
+          ls -la ~/libunwind/lib/pkgconfig/ || echo "pkg-config dir not found"
+          echo "=== .pc file contents ==="
+          cat ~/libunwind/lib/pkgconfig/*.pc 2>/dev/null || echo "No .pc files found"
       - name: Setup environment variables
         run: |
           echo "PKG_CONFIG_PATH=$HOME/libunwind/lib/pkgconfig" >> $GITHUB_ENV
