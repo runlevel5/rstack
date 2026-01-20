@@ -109,6 +109,8 @@ jobs:
           # Only build src directory to avoid test build failures with old libunwind versions
           make -C src -j$(nproc)
           make -C src install
+          # Install headers separately (they're in the include directory)
+          make -C include install
       - name: Setup environment variables
         run: |
           echo "PKG_CONFIG_PATH=$HOME/libunwind/lib/pkgconfig" >> $GITHUB_ENV
