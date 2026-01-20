@@ -48,20 +48,6 @@ jobs:
           - 1.2.1
           - 1.4.0
           - 1.6.2
-        exclude:
-          # libunwind has a bug where access_reg() dereferences cursor->uc without
-          # checking validity. When DWARF unwinding encounters DWARF_LOC_TYPE_REG
-          # locations, it calls access_reg() which computes an offset into the
-          # invalid/NULL uc pointer, causing SIGSEGV.
-          # See: https://github.com/libunwind/libunwind/issues/938
-          - target: x86_64
-            version: 1.4.0
-          - target: i686
-            version: 1.2.1
-          - target: i686
-            version: 1.4.0
-          - target: i686
-            version: 1.6.2
     name: libunwind ${{ matrix.target }} ${{ matrix.version }}
     runs-on: ubuntu-latest
     env:
@@ -136,4 +122,10 @@ jobs:
       - name: Systest
         run: cargo run --manifest-path unwind-systest/Cargo.toml --target ${{ matrix.target }}-unknown-linux-gnu
       - name: Unwind test
+        # Skip systest for certain combinations due to libunwind bug where access_reg()
+        # dereferences cursor->uc without checking validity. When DWARF unwinding
+        # encounters DWARF_LOC_TYPE_REG locations, it calls access_reg() which computes
+        # an offset into the invalid/NULL uc pointer, causing SIGSEGV.
+        # See: https://github.com/libunwind/libunwind/issues/938
+        if: ${{ !((matrix.target == 'x86_64' && matrix.version == '1.4.0') || matrix.target == 'i686') }}
         run: cargo test --manifest-path unwind/Cargo.toml --target ${{ matrix.target }}-unknown-linux-gnu
