@@ -134,6 +134,10 @@ pub struct unw_accessors_t {
             arg: *mut c_void,
         ) -> c_int,
     >,
+    // Added in libunwind 1.7.0 for pointer authentication on arm64
+    #[cfg(not(pre17))]
+    pub ptrauth_insn_mask:
+        Option<unsafe extern "C" fn(asp: unw_addr_space_t, arg: *mut c_void) -> unw_word_t>,
 }
 
 #[repr(C)]
