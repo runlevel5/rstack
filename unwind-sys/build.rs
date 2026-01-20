@@ -3,6 +3,12 @@ use pkg_config;
 use std::env;
 
 fn main() {
+    // Declare custom cfg flags for check-cfg
+    println!("cargo::rustc-check-cfg=cfg(pre12)");
+    println!("cargo::rustc-check-cfg=cfg(pre13)");
+    println!("cargo::rustc-check-cfg=cfg(pre14)");
+    println!("cargo::rustc-check-cfg=cfg(pre16)");
+
     let lib = if env::var_os("CARGO_FEATURE_PTRACE").is_some() {
         "libunwind-ptrace"
     } else {
