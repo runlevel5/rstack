@@ -122,7 +122,7 @@ jobs:
               ;;
           esac
 
-          curl -L https://download-mirror.savannah.nongnu.org/releases/libunwind/libunwind-${{ matrix.version }}.tar.gz | tar -C /tmp -xzf -
+          curl -L "https://github.com/libunwind/libunwind/releases/download/v${{ matrix.version }}/libunwind-${{ matrix.version }}.tar.gz" | tar -C /tmp -xzf -
           cd /tmp/libunwind-${{ matrix.version }}
 
           # Apply downstream patch to fix SIGSEGV in access_reg() due to NULL ucontext
