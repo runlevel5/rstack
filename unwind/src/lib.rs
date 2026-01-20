@@ -372,6 +372,14 @@ impl<'a> Cursor<'a> {
                 if ret == -UNW_EUNSPEC {
                     return Ok(false);
                 }
+                // libunwind < 1.6.2 can return -UNW_EBADREG during DWARF-based unwinding when
+                // access_reg() is called with a NULL ucontext. This happens because cursor->uc
+                // becomes NULL after the first frame for DWARF_LOC_TYPE_REG locations.
+                // Our downstream patches convert SIGSEGV to -UNW_EBADREG for graceful handling.
+                // See: https://github.com/libunwind/libunwind/issues/938
+                if ret == -UNW_EBADREG {
+                    return Ok(false);
+                }
                 Err(Error(ret))
             }
         }
