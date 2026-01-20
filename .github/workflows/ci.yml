@@ -84,16 +84,12 @@ jobs:
 
           sudo apt-get update
           sudo apt-get install -y $packages
-      - name: Install debugging tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gdb
       - name: Libunwind cache
         id: libunwind-cache
         uses: actions/cache@v5
         with:
           path: ~/libunwind
-          key: libunwind-${{ matrix.version }}-${{ matrix.target }}-v11-patched-debug
+          key: libunwind-${{ matrix.version }}-${{ matrix.target }}-v10-patched
       - name: Build libunwind
         if: ${{ !steps.libunwind-cache.outputs.cache-hit }}
         run: |
@@ -103,20 +99,18 @@ jobs:
             fcommon_flag="-fcommon"
           fi
 
-          # Enable debug logging: UNW_DEBUG_LEVEL controls verbosity (1-16)
-          # -DDEBUG enables Debug() macro, -DCONSERVATIVE disables optimizations
           case ${{ matrix.target }} in
             x86_64)
-              args="CFLAGS=\"-g3 -O0 -DDEBUG -DCONSERVATIVE $fcommon_flag\" CPPFLAGS=\"-DDEBUG\""
+              args="CFLAGS=\"-g -O0 $fcommon_flag\""
               ;;
             i686)
-              args="CFLAGS=\"-g3 -O0 -m32 -DDEBUG -DCONSERVATIVE $fcommon_flag\" CPPFLAGS=\"-DDEBUG\""
+              args="CFLAGS=\"-g -O0 -m32 $fcommon_flag\""
               ;;
             aarch64)
-              args="CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ CFLAGS=\"-g3 -O0 -DDEBUG -DCONSERVATIVE $fcommon_flag\" CPPFLAGS=\"-DDEBUG\""
+              args="CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ CFLAGS=\"-g -O0 $fcommon_flag\""
               ;;
             powerpc64)
-              args="CC=powerpc64-linux-gnu-gcc CXX=powerpc64-linux-gnu-g++ CFLAGS=\"-g3 -O0 -DDEBUG -DCONSERVATIVE $fcommon_flag\" CPPFLAGS=\"-DDEBUG\""
+              args="CC=powerpc64-linux-gnu-gcc CXX=powerpc64-linux-gnu-g++ CFLAGS=\"-g -O0 $fcommon_flag\""
               ;;
           esac
 
@@ -125,18 +119,11 @@ jobs:
 
           # Apply downstream patch to fix SIGSEGV in access_reg() due to NULL ucontext
           # See: https://github.com/libunwind/libunwind/issues/938
-          echo "=== Applying patch ==="
-          patch -p1 --verbose < $GITHUB_WORKSPACE/.github/patches/libunwind-${{ matrix.version }}-null-uc-check.patch || true
-          
-          # Show the patched files to verify
-          echo "=== Patched access_reg in x86/Ginit.c ==="
-          grep -A 20 "^access_reg" src/x86/Ginit.c 2>/dev/null | head -30 || true
-          echo "=== Patched access_reg in x86_64/Ginit.c ==="
-          grep -A 20 "^access_reg" src/x86_64/Ginit.c 2>/dev/null | head -30 || true
+          patch -p1 < $GITHUB_WORKSPACE/.github/patches/libunwind-${{ matrix.version }}-null-uc-check.patch || true
 
-          eval ./configure --enable-debug --enable-debug-frame --disable-static --host ${{ matrix.target }}-linux-gnu --target ${{ matrix.target }}-linux-gnu --prefix=$HOME/libunwind $args
+          eval ./configure --enable-debug --disable-static --host ${{ matrix.target }}-linux-gnu --target ${{ matrix.target }}-linux-gnu --prefix=$HOME/libunwind $args
           # Only build src directory to avoid test build failures with old libunwind versions
-          make -C src -j$(nproc) V=1
+          make -C src -j$(nproc)
           make -C src install
           # Install headers manually (make -C include install doesn't work standalone)
           mkdir -p $HOME/libunwind/include
@@ -161,30 +148,4 @@ jobs:
       - name: Systest
         run: cargo run --manifest-path unwind-systest/Cargo.toml --target ${{ matrix.target }}-unknown-linux-gnu
       - name: Unwind test
-        env:
-          # Enable libunwind debug output (level 1-16, higher = more verbose)
-          UNW_DEBUG_LEVEL: "16"
-        run: |
-          # Build the test first
-          cargo test --manifest-path unwind/Cargo.toml --target ${{ matrix.target }}-unknown-linux-gnu --no-run 2>&1 | tee build.log
-          
-          # Find the test binary
-          TEST_BIN=$(cargo test --manifest-path unwind/Cargo.toml --target ${{ matrix.target }}-unknown-linux-gnu --no-run 2>&1 | grep -oP 'Executable.*\(\K[^)]+' | head -1)
-          echo "Test binary: $TEST_BIN"
-          
-          # Run the test with debug output, capturing any crash
-          echo "=== Running test with UNW_DEBUG_LEVEL=16 ==="
-          if ! cargo test --manifest-path unwind/Cargo.toml --target ${{ matrix.target }}-unknown-linux-gnu 2>&1; then
-            echo "=== Test failed, running with GDB for backtrace ==="
-            # Enable core dumps
-            ulimit -c unlimited
-            echo "core" | sudo tee /proc/sys/kernel/core_pattern
-            
-            # Try to get a backtrace with GDB
-            if [ -n "$TEST_BIN" ] && [ -f "$TEST_BIN" ]; then
-              echo "=== Running test under GDB ==="
-              gdb -batch -ex "set pagination off" -ex "run" -ex "bt full" -ex "info registers" -ex "quit" "$TEST_BIN" 2>&1 || true
-            fi
-            
-            exit 1
-          fi
+        run: cargo test --manifest-path unwind/Cargo.toml --target ${{ matrix.target }}-unknown-linux-gnu
