@@ -163,7 +163,7 @@ jobs:
           echo "LD_LIBRARY_PATH=$HOME/libunwind/lib:$HOME/libunwind/lib64" >> $GITHUB_ENV
       - uses: Swatinem/rust-cache@v2
         with:
-          key: ${{ matrix.target }}-${{ matrix.version }}
+          key: ${{ matrix.target }}-${{ matrix.version }}-v2
       - name: Systest
         run: cargo run --manifest-path unwind-systest/Cargo.toml --target ${{ matrix.target }}-unknown-linux-gnu
       - name: Unwind test
