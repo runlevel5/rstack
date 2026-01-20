@@ -1,6 +1,6 @@
 --- a/src/x86/Ginit.c
 +++ b/src/x86/Ginit.c
-@@ -133,6 +133,14 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
+@@ -133,6 +133,15 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
    unw_word_t *addr;
    ucontext_t *uc = ((struct cursor *)arg)->uc;
  
@@ -9,6 +9,7 @@
 +      /* uc is NULL during DWARF-based unwinding with DWARF_LOC_TYPE_REG.
 +         Return an error since we can't access registers without a ucontext.
 +         See: https://github.com/libunwind/libunwind/issues/938 */
++      Debug (1, "access_reg: uc is NULL for reg %d, returning -UNW_EBADREG\n", reg);
 +      return -UNW_EBADREG;
 +    }
 +
@@ -44,7 +45,7 @@
      case UNW_X86_GS:  addr = &uc->uc_mcontext.gregs[REG_GS]; break;
 --- a/src/x86_64/Ginit.c
 +++ b/src/x86_64/Ginit.c
-@@ -286,6 +286,14 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
+@@ -286,6 +286,15 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
    unw_word_t *addr;
    ucontext_t *uc = ((struct cursor *)arg)->uc;
  
@@ -53,6 +54,7 @@
 +      /* uc is NULL during DWARF-based unwinding with DWARF_LOC_TYPE_REG.
 +         Return an error since we can't access registers without a ucontext.
 +         See: https://github.com/libunwind/libunwind/issues/938 */
++      Debug (1, "access_reg: uc is NULL for reg %d, returning -UNW_EBADREG\n", reg);
 +      return -UNW_EBADREG;
 +    }
 +
@@ -85,4 +87,4 @@
 +    return NULL;
  
    switch (reg)
-     {
+   {
