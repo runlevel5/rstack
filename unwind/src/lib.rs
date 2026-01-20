@@ -367,6 +367,11 @@ impl<'a> Cursor<'a> {
             } else if ret == 0 {
                 Ok(false)
             } else {
+                // libunwind 1.2.1 on i686 returns -UNW_EUNSPEC when it can't find unwind info
+                // for a frame instead of returning 0. Treat this as end of stack.
+                if ret == -UNW_EUNSPEC {
+                    return Ok(false);
+                }
                 Err(Error(ret))
             }
         }

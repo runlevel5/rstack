@@ -10,47 +10,24 @@ on:
 
 env:
   RUSTFLAGS: -D warnings
-  RUST_BACKTRACE: 1
-  STABLE_VERSION: 1.59.0
+  RUST_BACKTRACE: full
+  STABLE_VERSION: 1.82.0
 
 jobs:
   test:
     name: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Install Rust
         run: |
           rustup update $STABLE_VERSION
           rustup default $STABLE_VERSION
-      - name: Get Rust version
-        id: rust-version
-        run: echo "::set-output name=version::$(rustc --version)"
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y libunwind-dev libdw-dev
-      - name: Index cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.cargo/registry/index
-          key: index-${{ github.run_id }}
-          restore-keys: |
-            index-
-      - name: Create lockfile
-        run: cargo generate-lockfile
-      - name: Registry cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.cargo/registry/cache
-          key: registry-${{ hashFiles('Cargo.lock') }}
-      - name: Fetch dependencies
-        run: cargo fetch
-      - name: Target cache
-        uses: actions/cache@v2
-        with:
-          path: target
-          key: target-test-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
+      - uses: Swatinem/rust-cache@v2
       - name: Test everything
         run: cargo test
       - name: Test rstack with libdw
@@ -61,6 +38,7 @@ jobs:
         run: cargo run --manifest-path dw-systest/Cargo.toml
   libunwind:
     strategy:
+      fail-fast: false
       matrix:
         target:
           - x86_64
@@ -71,6 +49,20 @@ jobs:
           - 1.2.1
           - 1.4.0
           - 1.6.2
+        exclude:
+          # libunwind has a bug where access_reg() dereferences cursor->uc without
+          # checking validity. When DWARF unwinding encounters DWARF_LOC_TYPE_REG
+          # locations, it calls access_reg() which computes an offset into the
+          # invalid/NULL uc pointer, causing SIGSEGV.
+          # See: https://github.com/libunwind/libunwind/issues/938
+          - target: x86_64
+            version: 1.4.0
+          - target: i686
+            version: 1.2.1
+          - target: i686
+            version: 1.4.0
+          - target: i686
+            version: 1.6.2
     name: libunwind ${{ matrix.target }} ${{ matrix.version }}
     runs-on: ubuntu-latest
     env:
@@ -80,15 +72,12 @@ jobs:
       CARGO_TARGET_POWERPC64_UNKNOWN_LINUX_GNU_LINKER: powerpc64-linux-gnu-gcc
       CARGO_TARGET_POWERPC64_UNKNOWN_LINUX_GNU_RUNNER: qemu-ppc64 -L /usr/powerpc64-linux-gnu
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v6
       - name: Install Rust
         run: |
           rustup update $STABLE_VERSION
           rustup default $STABLE_VERSION
           rustup target add ${{ matrix.target }}-unknown-linux-gnu
-      - name: Get Rust version
-        id: rust-version
-        run: echo "::set-output name=version::$(rustc --version)"
       - name: Install cross compiler
         run: |
           case ${{ matrix.target }} in
@@ -110,58 +99,50 @@ jobs:
           sudo apt-get install -y $packages
       - name: Libunwind cache
         id: libunwind-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v5
         with:
           path: ~/libunwind
-          key: libunwind-${{ matrix.version }}-${{ matrix.target }}
+          key: libunwind-${{ matrix.version }}-${{ matrix.target }}-v6
       - name: Build libunwind
         if: ${{ !steps.libunwind-cache.outputs.cache-hit }}
         run: |
+          # libunwind < 1.5.0 needs -fcommon due to GCC 10+ defaulting to -fno-common
+          fcommon_flag=""
+          if [[ "${{ matrix.version }}" < "1.5.0" ]]; then
+            fcommon_flag="-fcommon"
+          fi
+
           case ${{ matrix.target }} in
             x86_64)
-              args=
+              args="CFLAGS=$fcommon_flag"
               ;;
             i686)
-              args=CFLAGS=-m32
+              args="CFLAGS=\"-m32 $fcommon_flag\""
               ;;
             aarch64)
-              args="CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++"
+              args="CC=aarch64-linux-gnu-gcc CXX=aarch64-linux-gnu-g++ CFLAGS=$fcommon_flag"
               ;;
             powerpc64)
-              args="CC=powerpc64-linux-gnu-gcc CXX=powerpc64-linux-gnu-g++"
+              args="CC=powerpc64-linux-gnu-gcc CXX=powerpc64-linux-gnu-g++ CFLAGS=$fcommon_flag"
               ;;
           esac
 
-          curl -L https://download.savannah.nongnu.org/releases/libunwind/libunwind-${{ matrix.version }}.tar.gz | tar -C /tmp -xzf -
+          curl -L https://download-mirror.savannah.nongnu.org/releases/libunwind/libunwind-${{ matrix.version }}.tar.gz | tar -C /tmp -xzf -
           cd /tmp/libunwind-${{ matrix.version }}
-          ./configure --disable-static --host ${{ matrix.target }}-linux-gnu --target ${{ matrix.target }}-linux-gnu --prefix=$HOME/libunwind $args
-          make -j$(nproc)
-          make install
+          eval ./configure --disable-static --host ${{ matrix.target }}-linux-gnu --target ${{ matrix.target }}-linux-gnu --prefix=$HOME/libunwind $args
+          # Only build src directory to avoid test build failures with old libunwind versions
+          make -C src -j$(nproc)
+          make -C src install
+          # Install headers manually (make -C include install doesn't work standalone)
+          mkdir -p $HOME/libunwind/include
+          cp include/*.h $HOME/libunwind/include/
       - name: Setup environment variables
         run: |
           echo "PKG_CONFIG_PATH=$HOME/libunwind/lib/pkgconfig" >> $GITHUB_ENV
           echo "LD_LIBRARY_PATH=$HOME/libunwind/lib" >> $GITHUB_ENV
-      - name: Index cache
-        uses: actions/cache@v2
+      - uses: Swatinem/rust-cache@v2
         with:
-          path: ~/.cargo/registry/index
-          key: index-${{ github.run_id }}
-          restore-keys: |
-            index-
-      - name: Create lockfile
-        run: cargo generate-lockfile
-      - name: Registry cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.cargo/registry/cache
-          key: registry-${{ hashFiles('Cargo.lock') }}
-      - name: Fetch dependencies
-        run: cargo fetch
-      - name: Target cache
-        uses: actions/cache@v2
-        with:
-          path: target
-          key: target-libunwind-${{ matrix.target }}-${{ matrix.version }}-${{ steps.rust-version.outputs.version }}-${{ hashFiles('Cargo.lock') }}
+          key: ${{ matrix.target }}-${{ matrix.version }}
       - name: Systest
         run: cargo run --manifest-path unwind-systest/Cargo.toml --target ${{ matrix.target }}-unknown-linux-gnu
       - name: Unwind test
