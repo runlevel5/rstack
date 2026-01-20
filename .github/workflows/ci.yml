@@ -93,7 +93,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/libunwind
-          key: libunwind-${{ matrix.version }}-${{ matrix.target }}-v11-patched-debug
+          key: libunwind-${{ matrix.version }}-${{ matrix.target }}-v12-patched-debug
       - name: Build libunwind
         if: ${{ !steps.libunwind-cache.outputs.cache-hit }}
         run: |
@@ -133,6 +133,10 @@ jobs:
           grep -A 20 "^access_reg" src/x86/Ginit.c 2>/dev/null | head -30 || true
           echo "=== Patched access_reg in x86_64/Ginit.c ==="
           grep -A 20 "^access_reg" src/x86_64/Ginit.c 2>/dev/null | head -30 || true
+          echo "=== Patched x86_r_uc_addr in x86/Gos-linux.c ==="
+          grep -A 15 "^x86_r_uc_addr" src/x86/Gos-linux.c 2>/dev/null | head -20 || true
+          echo "=== Patched x86_64_r_uc_addr in x86_64/Gos-linux.c ==="
+          grep -A 15 "^x86_64_r_uc_addr" src/x86_64/Gos-linux.c 2>/dev/null | head -20 || true
 
           eval ./configure --enable-debug --enable-debug-frame --disable-static --host ${{ matrix.target }}-linux-gnu --target ${{ matrix.target }}-linux-gnu --prefix=$HOME/libunwind $args
           # Only build src directory to avoid test build failures with old libunwind versions
