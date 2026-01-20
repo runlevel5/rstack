@@ -49,8 +49,10 @@ jobs:
           - 1.4.0
           - 1.6.2
         exclude:
-          # libunwind 1.6.2 has bugs causing SIGSEGV on i686 due to NULL ucontext
-          # in access_reg() when handling DWARF_LOC_TYPE_REG locations
+          # libunwind 1.4.0 has NULL ucontext bug in access_reg() on x86_64
+          - target: x86_64
+            version: 1.4.0
+          # libunwind 1.6.2 has NULL ucontext bug in access_reg() on i686
           - target: i686
             version: 1.6.2
     name: libunwind ${{ matrix.target }} ${{ matrix.version }}
