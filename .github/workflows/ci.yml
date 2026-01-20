@@ -59,6 +59,8 @@ jobs:
           - target: i686
             version: 1.2.1
           - target: i686
+            version: 1.4.0
+          - target: i686
             version: 1.6.2
     name: libunwind ${{ matrix.target }} ${{ matrix.version }}
     runs-on: ubuntu-latest
