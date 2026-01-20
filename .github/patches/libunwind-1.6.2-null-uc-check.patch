@@ -1,6 +1,6 @@
 --- a/src/x86/Ginit.c
 +++ b/src/x86/Ginit.c
-@@ -150,6 +150,18 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
+@@ -150,6 +150,17 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
    unw_word_t *addr;
    ucontext_t *uc = ((struct cursor *)arg)->uc;
  
@@ -18,7 +18,7 @@
    if (unw_is_fpreg (reg))
      goto badreg;
  
-@@ -176,6 +188,15 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
+@@ -176,6 +187,14 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
    ucontext_t *uc = ((struct cursor *)arg)->uc;
    unw_fpreg_t *addr;
  

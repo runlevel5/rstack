@@ -1,6 +1,6 @@
 --- a/src/x86/Ginit.c
 +++ b/src/x86/Ginit.c
-@@ -133,6 +133,18 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
+@@ -133,6 +133,17 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
    unw_word_t *addr;
    ucontext_t *uc = ((struct cursor *)arg)->uc;
  
@@ -18,7 +18,7 @@
    if (unw_is_fpreg (reg))
      goto badreg;
  
-@@ -159,6 +171,15 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
+@@ -159,6 +170,14 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
    ucontext_t *uc = ((struct cursor *)arg)->uc;
    unw_fpreg_t *addr;
  
@@ -35,7 +35,7 @@
  
 --- a/src/x86_64/Ginit.c
 +++ b/src/x86_64/Ginit.c
-@@ -286,6 +286,18 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
+@@ -286,6 +286,17 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
    unw_word_t *addr;
    ucontext_t *uc = ((struct cursor *)arg)->uc;
  
@@ -53,7 +53,7 @@
    if (unw_is_fpreg (reg))
      goto badreg;
  
-@@ -312,6 +324,15 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
+@@ -312,6 +323,14 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
    ucontext_t *uc = ((struct cursor *)arg)->uc;
    unw_fpreg_t *addr;
  
